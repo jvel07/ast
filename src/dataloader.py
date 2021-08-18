@@ -168,6 +168,7 @@ class AudiosetDataset(Dataset):
             label_indices = np.zeros(self.label_num)
             # add sample 1 labels
             for label_str in datum['labels'].split(','):
+                print(label_str)
                 label_indices[int(self.index_dict[label_str])] += mix_lambda
             # add sample 2 labels
             for label_str in mix_datum['labels'].split(','):
@@ -178,6 +179,8 @@ class AudiosetDataset(Dataset):
             datum = self.data[index]
             label_indices = np.zeros(self.label_num)
             fbank, mix_lambda = self._wav2fbank(datum['wav'])
+            print(datum, label_indices, self.index_dict)
+
             for label_str in datum['labels'].split(','):
                 label_indices[int(self.index_dict[label_str])] = 1.0
 

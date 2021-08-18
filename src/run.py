@@ -59,10 +59,11 @@ args = parser.parse_args()
 if args.model == 'ast':
     print('now train a audio spectrogram transformer model')
     # dataset spectrogram mean and std, used to normalize the input
-    norm_stats = {'audioset':[-4.2677393, 4.5689974], 'esc50':[-6.6268077, 5.358466], 'speechcommands':[-6.845978, 5.5654526]}
-    target_length = {'audioset':1024, 'esc50':512, 'speechcommands':128}
+    norm_stats = {'audioset':[-4.2677393, 4.5689974], 'esc50':[-6.6268077, 5.358466],
+                  'speechcommands':[-6.845978, 5.5654526], 'dementia': [-5.038124, 3.8022413]}
+    target_length = {'audioset': 1024, 'esc50': 512, 'speechcommands': 128, 'dementia': 512}
     # if add noise for data augmentation, only use for speech commands
-    noise = {'audioset': False, 'esc50': False, 'speechcommands':True}
+    noise = {'audioset': False, 'esc50': False, 'speechcommands': True, 'dementia': False}
 
     audio_conf = {'num_mel_bins': 128, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
                   'noise':noise[args.dataset]}
