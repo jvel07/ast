@@ -12,14 +12,16 @@ import numpy as np
 
 from src import dataloader
 
+recipe='cold'
+
 # set skip_norm as True only when you are computing the normalization stats
 audio_conf = {'num_mel_bins': 128, 'target_length': 1024, 'freqm': 24, 'timem': 192, 'mixup': 0, 'skip_norm': True,
-              'mode': 'train', 'dataset': 'audioset'}
+              'mode': 'train', 'dataset': recipe}
 
 train_loader = torch.utils.data.DataLoader(
-                               dataloader.AudiosetDataset('../egs/dementia/data/datafiles/dementia_total_data.json',
-                               label_csv='../egs/dementia/data/dementia_class_label_indices.csv',
-                               audio_conf=audio_conf), batch_size=1000, shuffle=False, num_workers=8, pin_memory=True)
+                               dataloader.AudiosetDataset('../egs/{0}/data/{0}_total_data.json'.format(recipe),
+                                                          label_csv='../egs/{0}/data/{0}_class_label_indices.csv'.format(recipe),
+                                                          audio_conf=audio_conf), batch_size=1000, shuffle=False, num_workers=8, pin_memory=True)
 mean = []
 std = []
 for i, (audio_input, labels) in enumerate(train_loader):

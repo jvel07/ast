@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Time    : 10/19/20 5:15 AM
-# @Author  : Yuan Gong
-# @Affiliation  : Massachusetts Institute of Technology
-# @Email   : yuangong@mit.edu
-# @File    : prep_esc50.py
-
 import numpy as np
 import json
 import os
@@ -53,45 +46,33 @@ def get_immediate_files(a_dir):
 if os.path.exists('./data/datafiles') == False:
     os.mkdir('./data/datafiles')
 
-base_path_16k = '/home/egasj/data/audio/demencia94B-wav16k'
-meta = pd.read_csv('dementia_meta.csv')
+base_path_16k = '/home/egasj/data/audio/cold2'
+meta = pd.read_csv('data/cold_meta.csv')
 
-X = meta.loc[:, 'folder':'filename']
-y = meta['label']
+for _set in ['train', 'dev', 'test']:
 
-skf = StratifiedKFold(n_splits=5)
-for idx, (train_idx, test_idx) in enumerate(skf.split(X, y), start=1):
-    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    # X = meta.loc[:, 'folder':'filename']
+    # y = meta['label']
 
-    X_train['label'] = y_train
-    X_test['label'] = y_test
+    X = meta[meta['filename'].str.contains(_set)]
+    y = X['label']
 
-    train = X_train.values.tolist()
-    test = X_test.values.tolist()
+    train = X.values.tolist()
     train_wav_list = []
-    eval_wav_list = []
 
     for val in train:
         cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
         train_wav_list.append(cur_dict)
 
-    for val in test:
-        cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
-        eval_wav_list.append(cur_dict)
-
-    with open('./data/datafiles/dementia_train_data_' + str(idx) + '.json', 'w') as f:
+    with open('./data/datafiles/cold_{}_data.json'.format(_set), 'w') as f:
         json.dump({'data': train_wav_list}, f, indent=1)
 
-    with open('./data/datafiles/dementia_eval_data_' + str(idx) + '.json', 'w') as f:
-        json.dump({'data': eval_wav_list}, f, indent=1)
 
-
-tot = train + test
+tot = meta.values.tolist()
 total_data = []
 for val in tot:
     cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
     total_data.append(cur_dict)
 
-with open('data/dementia_total_data.json', 'w') as f:
+with open('data/cold_total_data.json', 'w') as f:
     json.dump({'data': total_data}, f, indent=1)

@@ -54,7 +54,6 @@ def train(audio_model, train_loader, test_loader, args):
     optimizer = torch.optim.Adam(trainables, args.lr, weight_decay=5e-7, betas=(0.95, 0.999))
 
     # dataset specific settings
-    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=args.lr_patience, verbose=True)
     if args.dataset == 'audioset':
         if len(train_loader.dataset) > 2e5:
             print('scheduler for full audioset is used')
@@ -85,8 +84,17 @@ def train(audio_model, train_loader, test_loader, args):
         main_metrics = 'acc'
         loss_fn = nn.CrossEntropyLoss()
         warmup = False
+
+    elif args.dataset == 'cold':
+        print('using scheduler for cold...')
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, list(range(5, 26)), gamma=0.85)
+        main_metrics = 'acc'
+        loss_fn = nn.BCELoss()
+        warmup = False
+
     else:
         raise ValueError('unknown dataset, dataset should be in [audioset, speechcommands, esc50]')
+    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=args.lr_patience, verbose=True)
     print('now training with {:s}, main metrics: {:s}, loss function: {:s}, learning rate scheduler: {:s}'.format(
         str(args.dataset), str(main_metrics), str(loss_fn), str(scheduler)))
     args.loss_fn = loss_fn

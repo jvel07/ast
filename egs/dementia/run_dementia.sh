@@ -38,7 +38,8 @@ python ./prep_esc50.py
 
 if [ -d $base_exp_dir ]; then
   echo 'exp exist'
-  exit
+  rmdir -r $exp_dir
+  #exit
 fi
 mkdir -p $exp_dir
 
@@ -48,15 +49,15 @@ do
 
   exp_dir=${base_exp_dir}/fold${fold}
 
-  tr_data=./data/datafiles/esc_train_data_${fold}.json
-  te_data=./data/datafiles/esc_eval_data_${fold}.json
+  tr_data=./data/datafiles/dementia_train_data_${fold}.json
+  te_data=./data/datafiles/dementia_eval_data_${fold}.json
 
-  CUDA_CACHE_DISABLE=1 python -W ignore ../../src/run.py --model ${model} --dataset ${dataset} \
+  CUDA_CACHE_DISABLE=1 CUDA_DEVICE_ORDER="PCE_BUS_ID" CUDA_VISIBLE_DEVICES="0" python -W ignore ../../src/run.py --model ${model} --dataset ${dataset} \
   --data-train ${tr_data} --data-val ${te_data} --exp-dir $exp_dir \
-  --label-csv ./data/esc_class_labels_indices.csv --n_class 50 \
+  --label-csv ./data/${dataset}_class_label_indices.csv --n_class 3 \
   --lr $lr --n-epochs ${epoch} --batch-size $batch_size --save_model False \
   --freqm $freqm --timem $timem --mixup ${mixup} --bal ${bal} \
   --tstride $tstride --fstride $fstride --imagenet_pretrain $imagenetpretrain --audioset_pretrain $audiosetpretrain
 done
 
-python ./get_esc_result.py --exp_path ${base_exp_dir}
+#python ./get_esc_result.py --exp_path ${base_exp_dir}

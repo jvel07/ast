@@ -5,8 +5,12 @@
 # @Email   : yuangong@mit.edu
 # @File    : run.py
 
+
 import argparse
 import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+
 import ast
 import pickle
 import sys
@@ -29,7 +33,9 @@ parser.add_argument("--data-eval", type=str, default='', help="evaluation data j
 parser.add_argument("--label-csv", type=str, default='', help="csv with class labels")
 parser.add_argument("--n_class", type=int, default=527, help="number of classes")
 parser.add_argument("--model", type=str, default='ast', help="the model used")
-parser.add_argument("--dataset", type=str, default="audioset", help="the dataset used", choices=["audioset", "esc50", "speechcommands"])
+parser.add_argument("--dataset", type=str, default="audioset", help="the dataset used", choices=["audioset", "esc50",
+                                                                                                 "speechcommands",
+                                                                                                 "dementia", "cold"])
 
 parser.add_argument("--exp-dir", type=str, default="", help="directory to dump experiments")
 parser.add_argument('--lr', '--learning-rate', default=0.001, type=float, metavar='LR', help='initial learning rate')
@@ -60,14 +66,20 @@ if args.model == 'ast':
     print('now train a audio spectrogram transformer model')
     # dataset spectrogram mean and std, used to normalize the input
     norm_stats = {'audioset':[-4.2677393, 4.5689974], 'esc50':[-6.6268077, 5.358466],
-                  'speechcommands':[-6.845978, 5.5654526], 'dementia': [-5.038124, 3.8022413]}
-    target_length = {'audioset': 1024, 'esc50': 512, 'speechcommands': 128, 'dementia': 512}
+                  'speechcommands':[-6.845978, 5.5654526], 'dementia': [-5.038124, 3.8022413],
+                  'cold': [-2.0982502, 3.3960235]}
+    target_length = {'audioset': 1024, 'esc50': 512, 'speechcommands': 128, 'dementia': 512, 'cold': 512}
     # if add noise for data augmentation, only use for speech commands
-    noise = {'audioset': False, 'esc50': False, 'speechcommands': True, 'dementia': False}
+    noise = {'audioset': False, 'esc50': False, 'speechcommands': True, 'dementia': False, 'cold': False}
 
-    audio_conf = {'num_mel_bins': 128, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
-                  'noise':noise[args.dataset]}
-    val_audio_conf = {'num_mel_bins': 128, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False}
+    audio_conf = {'num_mel_bins': 128, 'target_length': target_length[args.dataset], 'freqm': args.freqm,
+                  'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train',
+                  'mean': norm_stats[args.dataset][0], 'std': norm_stats[args.dataset][1],
+                  'noise': noise[args.dataset]}
+
+    val_audio_conf = {'num_mel_bins': 128, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0,
+                      'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0],
+                      'std':norm_stats[args.dataset][1], 'noise':False}
 
     if args.bal == 'bal':
         print('balanced sampler is being used')
@@ -100,7 +112,7 @@ print('Now starting training for {:d} epochs'.format(args.n_epochs))
 train(audio_model, train_loader, val_loader, args)
 
 # for speechcommands dataset, evaluate the best model on validation set on the test set
-if args.dataset == 'speechcommands':
+if args.dataset == 'speechcommands' or args.dataset == 'cold':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sd = torch.load(args.exp_dir + '/models/best_audio_model.pth', map_location=device)
     audio_model = torch.nn.DataParallel(audio_model)

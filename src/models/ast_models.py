@@ -4,11 +4,13 @@
 # @Affiliation  : Massachusetts Institute of Technology
 # @Email   : yuangong@mit.edu
 # @File    : ast_models.py
+import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
-import os
 import wget
 
 os.environ['TORCH_HOME'] = '../../pretrained_models'
@@ -48,8 +50,8 @@ class ASTModel(nn.Module):
     :param model_size: the model size of AST, should be in [tiny224, small224, base224, base384], base224 and base 384 are same model, but are trained differently during ImageNet pretraining.
     """
 
-    def __init__(self, label_dim=527, fstride=10, tstride=10, input_fdim=128, input_tdim=1024, imagenet_pretrain=True,
-                 audioset_pretrain=False, model_size='base384', verbose=True):
+    def __init__(self, label_dim=3, fstride=10, tstride=10, input_fdim=128, input_tdim=1024, imagenet_pretrain=True,
+                 audioset_pretrain=True, model_size='base384', verbose=True):
 
         super(ASTModel, self).__init__()
         assert timm.__version__ == '0.4.5', 'Please use timm == 0.4.5, the code might not be compatible with newer versions.'
@@ -140,11 +142,13 @@ class ASTModel(nn.Module):
                 # this model performs 0.4593 mAP on the audioset eval set
                 audioset_mdl_url = 'https://www.dropbox.com/s/cv4knew8mvbrnvq/audioset_0.4593.pth?dl=1'
                 wget.download(audioset_mdl_url, out='../../pretrained_models/audioset_10_10_0.4593.pth')
-            sd = torch.load('../../pretrained_models/ast_audioset.pth', map_location=device)
+            sd = torch.load('../../pretrained_models/audioset_10_10_0.4593.pth', map_location=device)
+            # sd = torch.load('../../pretrained_models/ast_audioset.pth', map_location=device)
             audio_model = ASTModel(label_dim=527, fstride=10, tstride=10, input_fdim=128, input_tdim=1024,
                                    imagenet_pretrain=False, audioset_pretrain=False, model_size='base384',
                                    verbose=False)
             audio_model = torch.nn.DataParallel(audio_model)
+            print("***************USING=>", torch.cuda.current_device())
             audio_model.load_state_dict(sd, strict=False)
             self.v = audio_model.module.v
             self.original_embedding_dim = self.v.pos_embed.shape[2]
@@ -203,19 +207,19 @@ class ASTModel(nn.Module):
         return x
 
 
-if __name__ == '__main__':
-    input_tdim = 100
-    ast_mdl = ASTModel(input_tdim=input_tdim)
-    # input a batch of 10 spectrogram, each with 100 time frames and 128 frequency bins
-    test_input = torch.rand([10, input_tdim, 128])
-    test_output = ast_mdl(test_input)
-    # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
-    print(test_output.shape)
-
-    input_tdim = 512
-    ast_mdl = ASTModel(input_tdim=input_tdim, label_dim=50, audioset_pretrain=True)
-    # input a batch of 10 spectrogram, each with 512 time frames and 128 frequency bins
-    test_input = torch.rand([10, input_tdim, 128])
-    test_output = ast_mdl(test_input)
-    # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
-    print(test_output.shape)
+# if __name__ == '__main__':
+#     input_tdim = 100
+#     ast_mdl = ASTModel(input_tdim=input_tdim)
+#     # input a batch of 10 spectrogram, each with 100 time frames and 128 frequency bins
+#     test_input = torch.rand([10, input_tdim, 128])
+#     test_output = ast_mdl(test_input)
+#     # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
+#     print(test_output.shape)
+#
+#     input_tdim = 512
+#     ast_mdl = ASTModel(input_tdim=input_tdim, label_dim=50, audioset_pretrain=True)
+#     # input a batch of 10 spectrogram, each with 512 time frames and 128 frequency bins
+#     test_input = torch.rand([10, input_tdim, 128])
+#     test_output = ast_mdl(test_input)
+#     # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
+#     print(test_output.shape)
