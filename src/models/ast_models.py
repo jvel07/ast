@@ -8,6 +8,7 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 
+
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
@@ -170,7 +171,9 @@ class ASTModel(nn.Module):
             # otherwise interpolate
             else:
                 new_pos_embed = torch.nn.functional.interpolate(new_pos_embed, size=(12, t_dim), mode='bilinear')
+            print("NEW POST EMBED:", new_pos_embed.shape)
             new_pos_embed = new_pos_embed.reshape(1, 768, num_patches).transpose(1, 2)
+            print("NEW POST EMBED:", new_pos_embed.shape)
             self.v.pos_embed = nn.Parameter(torch.cat([self.v.pos_embed[:, :2, :].detach(), new_pos_embed], dim=1))
 
     def get_shape(self, fstride, tstride, input_fdim=128, input_tdim=1024):
@@ -203,7 +206,7 @@ class ASTModel(nn.Module):
         x = self.v.norm(x)
         x = (x[:, 0] + x[:, 1]) / 2
 
-        x = self.mlp_head(x)
+        # x = self.mlp_head(x)
         return x
 
 

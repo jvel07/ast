@@ -177,6 +177,7 @@ class AudiosetDataset(Dataset):
         # if not do mixup
         else:
             datum = self.data[index]
+            file_name = datum['wav']
             label_indices = np.zeros(self.label_num)
             fbank, mix_lambda = self._wav2fbank(datum['wav'])
             print(datum, label_indices, self.index_dict)
@@ -210,7 +211,7 @@ class AudiosetDataset(Dataset):
         mix_ratio = min(mix_lambda, 1-mix_lambda) / max(mix_lambda, 1-mix_lambda)
 
         # the output fbank shape is [time_frame_num, frequency_bins], e.g., [1024, 128]
-        return fbank, label_indices
+        return fbank, label_indices, file_name
 
     def __len__(self):
         return len(self.data)

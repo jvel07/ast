@@ -29,7 +29,7 @@ freqm=24
 timem=96
 mixup=0
 epoch=25
-batch_size=16
+batch_size=8
 fstride=10
 tstride=10
 base_exp_dir=./exp/test-${dataset}-f$fstride-t$tstride-imp$imagenetpretrain-asp$audiosetpretrain-b$batch_size-lr${lr}
@@ -50,7 +50,7 @@ train_data=./data/datafiles/${dataset}_train_data.json
 val_data=./data/datafiles/${dataset}_dev_data.json
 eval_data=./data/datafiles/${dataset}_test_data.json
 
-CUDA_CACHE_DISABLE=1 CUDA_DEVICE_ORDER="PCE_BUS_ID" CUDA_VISIBLE_DEVICES="0,1,2,3" python -W ignore ../../src/run.py --model ${model} --dataset ${dataset} \
+CUDA_CACHE_DISABLE=1 CUDA_VISIBLE_DEVICES="0,1" python -W ignore ../../src/run.py --model ${model} --dataset ${dataset} \
 --data-train ${train_data} --data-val ${val_data} --data-eval ${eval_data} --exp-dir $exp_dir \
 --label-csv ./data/${dataset}_class_label_indices.csv --n_class 2 \
 --lr $lr --n-epochs ${epoch} --batch-size $batch_size --save_model False \

@@ -41,7 +41,7 @@ parser.add_argument("--exp-dir", type=str, default="", help="directory to dump e
 parser.add_argument('--lr', '--learning-rate', default=0.001, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument("--optim", type=str, default="adam", help="training optimizer", choices=["sgd", "adam"])
 parser.add_argument('-b', '--batch-size', default=12, type=int, metavar='N', help='mini-batch size')
-parser.add_argument('-w', '--num-workers', default=32, type=int, metavar='NW', help='# of workers for dataloading (default: 32)')
+parser.add_argument('-w', '--num-workers', default=2, type=int, metavar='NW', help='# of workers for dataloading (default: 32)')
 parser.add_argument("--n-epochs", type=int, default=1, help="number of maximum training epochs")
 # not used in the formal experiments
 parser.add_argument("--lr_patience", type=int, default=2, help="how many epoch to wait to reduce lr if mAP doesn't improve")
