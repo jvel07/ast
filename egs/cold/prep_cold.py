@@ -47,7 +47,7 @@ if os.path.exists('./data/datafiles') == False:
     os.mkdir('./data/datafiles')
 
 base_path_16k = '/home/egasj/data/audio/cold2'
-meta = pd.read_csv('data/cold_meta.csv')
+meta = pd.read_csv('data/cold_meta_2.csv')
 
 for _set in ['train', 'dev', 'test']:
 
@@ -61,18 +61,20 @@ for _set in ['train', 'dev', 'test']:
     train_wav_list = []
 
     for val in train:
-        cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
+        # meta goes like [filename, lbl_number, lbl_cat]
+        cur_dict = {"wav": os.path.join(base_path_16k, val[0]), "labels": '/m/21rwj' + str(val[1]).zfill(2)}
         train_wav_list.append(cur_dict)
 
     with open('./data/datafiles/cold_{}_data.json'.format(_set), 'w') as f:
         json.dump({'data': train_wav_list}, f, indent=1)
 
 
-tot = meta.values.tolist()
-total_data = []
-for val in tot:
-    cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
-    total_data.append(cur_dict)
-
-with open('data/cold_total_data.json', 'w') as f:
-    json.dump({'data': total_data}, f, indent=1)
+# This is for obtaining the norm stats only.
+# tot = meta.values.tolist()
+# total_data = []
+# for val in tot:
+#     cur_dict = {"wav": os.path.join(base_path_16k, val[1]), "labels": '/m/21rwj' + str(val[2]).zfill(2)}
+#     total_data.append(cur_dict)
+#
+# with open('data/cold_total_data.json', 'w') as f:
+#     json.dump({'data': total_data}, f, indent=1)

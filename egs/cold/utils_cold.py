@@ -10,7 +10,7 @@ def create_csv_for_ast():
         folder,filename,label
         hc,006B_feher.wav,3
     """
-    audio_folder = '/media/jvel/data/audio/cold2'
+    audio_folder = '/home/egasj/data/audio/cold2'
     audio_list = os.listdir(audio_folder)
     for_csv = []
 
@@ -19,13 +19,20 @@ def create_csv_for_ast():
 
     label_map = {'1': 'cold', '0': 'healthy'}
 
-    for class_id, filename in zip(labels, audio_list):
-        for_csv.append([label_map[class_id], filename, class_id])
-    for_csv.sort()
-    with open("data/cold_meta.csv", "w+") as my_csv:
-        csv_writer = csv.writer(my_csv, delimiter=',')
-        csv_writer.writerow(['folder', 'filename', 'label'])
-        csv_writer.writerows(for_csv)
+    for idx, row in df_labels.iterrows():
+        lbl_num = row['label']
+        lbl_cat = label_map[lbl_num]
+        df_labels['folder'][idx] = lbl_cat
+
+    df_labels.to_csv("data/cold_meta_2.csv", index=False)
+
+    # for class_id, filename in zip(labels, audio_list):
+    #     for_csv.append([label_map[class_id], filename, class_id])
+    # for_csv.sort()
+    # with open("data/cold_meta.csv", "w+") as my_csv:
+    #     csv_writer = csv.writer(my_csv, delimiter=',')
+    #     csv_writer.writerow(['folder', 'filename', 'label'])
+    #     csv_writer.writerows(for_csv)
 
 
 def create_class_label_idx_csv():
@@ -52,5 +59,5 @@ def create_class_label_idx_csv():
         csvWriter.writerows(for_csv)
 
 
-create_csv_for_ast()
-create_class_label_idx_csv()
+# create_csv_for_ast()
+# create_class_label_idx_csv()

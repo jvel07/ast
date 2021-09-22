@@ -1,4 +1,5 @@
 import torch
+import pandas as pd
 from src import dataloader, models
 
 dataset = 'cold'
@@ -53,20 +54,32 @@ audio_model = models.ASTModel(label_dim=n_class, fstride=fstride, tstride=tstrid
                               input_tdim=target_length[dataset], imagenet_pretrain=True,
                               audioset_pretrain=True, model_size='base384')
 
+for index, i in enumerate([train_loader, val_loader, test_loader]):
+    if index == 0:
+        set_ = 'train'
+    elif index == 1:
+        set_ = 'dev'
+    else:
+        set_ = 'test'
+    print("==========================> NOW WORKING WITH: ", set_)
 
-embs = dict()
-list_embs = []
-list_files = []
-list_lbl = []
-for idx, sample in enumerate(train_loader):
-    # print("sample: ", idx, sample[0].shape)
-    output = audio_model(sample[0])
-    # print("file: ", filename, "label", sample)
-    list_embs.append(output.detach().numpy())
-    list_files.append(sample[2])
-    list_lbl.append(sample[1])
+    embs = dict()
+    list_embs = []
+    list_files = []
+    list_lbl = []
 
-embs["file_name"] = list_files
-embs["label"] = list_lbl
-embs["embedding"] = list_embs
+    for idx, sample in enumerate(i):
+        # print("sample: ", idx, sample[0].shape)
+        output = audio_model(sample[0])
+        # print("file: ", filename, "label", sample)
+        list_embs.append(output.detach().numpy())
+        list_files.append(sample[2])
+        list_lbl.append(sample[1])
+
+    embs["file_name"] = list_files
+    embs["label"] = list_lbl
+    embs["embedding"] = list_embs
+    df = pd.DataFrame.from_dict(embs)
+
+    df.to_csv("embeddings/{}_embeddings_ast.csv".format(set_), index=False)
     # print(idx, "added to embeddings list")
